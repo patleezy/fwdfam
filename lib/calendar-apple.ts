@@ -53,7 +53,7 @@ async function propfind(url: string, body: string, auth: string): Promise<string
   return response.text();
 }
 
-async function discoverCalDavHomeUrl(icloudEmail: string, appPassword: string): Promise<string> {
+export async function discoverCalDavHomeUrl(icloudEmail: string, appPassword: string): Promise<string> {
   const auth = basicAuthHeader(icloudEmail, appPassword);
   const base = process.env.CALDAV_BASE_URL ?? "https://caldav.icloud.com";
 
