@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/api/inbound-email/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}
