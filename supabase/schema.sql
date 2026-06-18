@@ -11,7 +11,6 @@ create extension if not exists "uuid-ossp";
 create table public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
-  phone_number text,                        -- E.164 format, e.g. +13105551234
   timezone text not null default 'America/Los_Angeles',
   inbound_email_handle text unique not null, -- e.g. "patrick-a3f2" -> patrick-a3f2@mail.fwdfam.app
   calendar_provider text not null default 'google', -- 'google' | 'apple'

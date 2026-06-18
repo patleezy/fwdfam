@@ -15,17 +15,6 @@ export default async function OnboardingPage() {
       >
         <h1 className="text-2xl font-semibold">Set up FwdFam</h1>
 
-        <label className="flex flex-col gap-1">
-          <span>Phone number</span>
-          <input
-            type="tel"
-            name="phone_number"
-            required
-            placeholder="+13105551234"
-            className="rounded border border-neutral-300 px-3 py-2"
-          />
-        </label>
-
         <fieldset className="flex flex-col gap-2">
           <legend>Which calendar do you use?</legend>
           <label className="flex items-center gap-2">

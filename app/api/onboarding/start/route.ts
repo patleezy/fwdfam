@@ -9,14 +9,11 @@ export async function POST(req: NextRequest) {
   }
 
   const formData = await req.formData();
-  const phoneNumber = formData.get("phone_number");
   const calendarProvider = formData.get("calendar_provider");
 
-  if (typeof phoneNumber !== "string" || (calendarProvider !== "google" && calendarProvider !== "apple")) {
+  if (calendarProvider !== "google" && calendarProvider !== "apple") {
     return NextResponse.json({ error: "Invalid form submission" }, { status: 400 });
   }
-
-  await supabase.from("users").update({ phone_number: phoneNumber }).eq("id", data.user.id);
 
   const nextUrl =
     calendarProvider === "google"

@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { extractEvents } from "@/lib/llm";
 import { pushToGoogleCalendar } from "@/lib/calendar-google";
 import { pushToAppleCalendar } from "@/lib/calendar-apple";
-import { sendSMS } from "@/lib/twilio";
+import { sendConfirmationEmail } from "@/lib/postmark-email";
 import { getTokenRecord, refreshGoogleAccessToken } from "@/lib/oauth";
 import { convertHeicToJpeg } from "@/lib/image-utils";
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     const { data: user, error: userError } = await supabase
       .from("users")
-      .select("id, timezone, subscription_status, phone_number, calendar_provider")
+      .select("id, email, timezone, subscription_status, calendar_provider")
       .eq("inbound_email_handle", handle)
       .single();
 
@@ -64,7 +64,11 @@ export async function POST(req: NextRequest) {
 
     // 2. Guard: subscription must be active or trialing
     if (!["active", "trialing"].includes(user.subscription_status)) {
-      await sendSMS(user.phone_number, "Your FwdFam subscription isn't active. Visit fwdfam.app to reactivate.");
+      await sendConfirmationEmail(
+        user.email,
+        "FwdFam: subscription inactive",
+        "Your FwdFam subscription isn't active. Visit fwdfam.app to reactivate."
+      );
       return NextResponse.json({ error: "Inactive subscription" }, { status: 402 });
     }
 
@@ -125,9 +129,10 @@ export async function POST(req: NextRequest) {
         status: "zero_events",
         processing_ms: Date.now() - start,
       });
-      await sendSMS(
-        user.phone_number,
-        `Hey! We got your email from ${emailFrom} but couldn't find any events. Try forwarding it again or reply HELP.`
+      await sendConfirmationEmail(
+        user.email,
+        "FwdFam: no events found",
+        `Hey! We got your email from ${emailFrom} but couldn't find any events. Try forwarding it again or contact support@fwdfam.app.`
       );
       return NextResponse.json({ success: true, events: 0 });
     }
@@ -161,11 +166,12 @@ export async function POST(req: NextRequest) {
       successCount = results.filter((r) => r.status === "fulfilled").length;
     }
 
-    // 8. SMS confirmation
+    // 8. Email confirmation
     const eventTitles = extraction.events.slice(0, 3).map((e) => e.title).join(", ");
     const moreCount = extraction.events.length - 3;
-    await sendSMS(
-      user.phone_number,
+    await sendConfirmationEmail(
+      user.email,
+      `FwdFam: added ${successCount} event${successCount !== 1 ? "s" : ""}`,
       `Added ${successCount} event${successCount !== 1 ? "s" : ""} from ${emailFrom}: ${eventTitles}${moreCount > 0 ? ` + ${moreCount} more` : ""}.`
     );
 
